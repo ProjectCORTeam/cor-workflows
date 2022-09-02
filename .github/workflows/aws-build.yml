@@ -20,14 +20,19 @@ on:
       release_version:
         description: "Semantic versioning for production environment"
         value: ${{ jobs.aws-build.outputs.release_version }}
-
     secrets: 
-      CODEBUILD_PROJECT_PROD: ${{secrets.CODEBUILD_PROJECT_PROD}}
-      CODEBUILD_PROJECT_STAGING: ${{secrets.CODEBUILD_PROJECT_STAGING}}
-      CICD_AWS_ACCESS_KEY_ID: ${{secrets.CICD_AWS_ACCESS_KEY_ID}}
-      CICD_AWS_SECRET_ACCESS_KEY: ${{secrets.CICD_AWS_SECRET_ACCESS_KEY}}
-      CICD_AWS_REGION: ${{secrets.CICD_AWS_REGION}}
-      GOOGLE_WEBHOOK: ${{secrets.GOOGLE_WEBHOOK}}
+      CODEBUILD_PROJECT_PROD:
+        required: true
+      CODEBUILD_PROJECT_STAGING:
+        required: true
+      CICD_AWS_ACCESS_KEY_ID:
+        required: true
+      CICD_AWS_SECRET_ACCESS_KEY:
+        required: true
+      CICD_AWS_REGION:
+        required: true
+      GOOGLE_WEBHOOK:
+        required: true
 
 jobs:
   aws-build:
