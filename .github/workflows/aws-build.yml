@@ -8,6 +8,9 @@ on:
         type: string
         default: 'ubuntu-latest'
     outputs:
+      new_stage:
+        description: "New stage deployment check flag"
+        value: ${{ jobs.aws-build.outputs.new_stage }}
       env_check:
         description: "Environment status checker"
         value: ${{ jobs.aws-build.outputs.env_check }}
@@ -39,7 +42,8 @@ jobs:
     runs-on: ${{ inputs.runner }}
     name: AWS CodeBuild Trigger and Helm Push
     outputs:
-      stage_check: ${{ steps.check-project.outputs.PROJECT_EXIST }}
+      new_stage: ${{ steps.check-project.outputs.new_stage }}
+      stage_check: ${{ steps.check-project.outputs.project_exist }}
       stage: ${{ steps.set_project_name.outputs.stage }}
       env_check: ${{ steps.check-project.outcome }}
       release_version: ${{ steps.set_project_name.outputs.release_version}}
@@ -107,7 +111,14 @@ jobs:
         run: |
           PROJECT_EXIST=$(aws codebuild list-projects --region ${{ secrets.CICD_AWS_REGION }} --query 'projects[?contains(@,`${{ env.PROJECT }}`) == `true`]' | jq -e 'length > 0')
           echo "Project exist: "$PROJECT_EXIST
-          echo "::set-output name=PROJECT_EXIST::$PROJECT_EXIST"
+          echo "::set-output name=project_exist::$PROJECT_EXIST"
+          
+          if [[ $PROJECT_EXIST == "true" ]]; \
+          then \
+            echo "::set-output name=NEW_STAGE::false"; \
+          elif [[ $PROJECT_EXIST == "false" ]]; \
+            echo "::set-output name=new_stage::true"; \
+          fi
         
       - name: Run AWS CodeBuild
         id: codebuild
