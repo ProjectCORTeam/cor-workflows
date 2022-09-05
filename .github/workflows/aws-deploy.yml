@@ -32,8 +32,8 @@ on:
       #   required: true
       # CICD_AWS_SECRET_ACCESS_KEY:
       #   required: true
-      # CICD_AWS_REGION:
-      #   required: true
+      CICD_AWS_REGION:
+        required: true
       GOOGLE_WEBHOOK:
         required: true
       TF_API_TOKEN:
