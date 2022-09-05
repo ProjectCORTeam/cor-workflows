@@ -11,6 +11,11 @@ on:
         required: true
         type: string
         description: "Environment status checker"
+      new_env:
+        required: true
+        type: boolean
+        description: "New stage for deploy check flag"
+        default: false
       stage:
         required: true
         type: string
@@ -45,39 +50,45 @@ jobs:
         - name: Checkout
           uses: actions/checkout@v3
 
+        - name: Input checks
+          shell: bash
+          working-directory: .infra/terraform
+          run: |
+            echo "runner: "${{ inputs.runner }}
+            echo "env_check: "${{inputs.env_check}}
+            echo "new_env: "${{ inputs.new_env }}
+            echo "stage: "${{inputs.stage}}
+            echo "release_version: "${{inputs.release_version}}
+
         - name: Generate terraform.auto.tfvars for new environment
-          if:  ${{ inputs.env_check != 'success' }}
+          if:  ${{ inputs.new_env }}
           id: tfvars_generator_new
           shell: bash
           working-directory: .infra/terraform
           run: |
-            echo "Project exist: "${{ inputs.env_check }}
-            echo "Terraform stage to deploy: "${{inputs.stage}}
             if [ ${{inputs.stage}} == 'master' ]; then \
-              jq --argjson new_env true '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "production")) += {release_version: $version}'  > terraform.auto.tfvars.json;\
+              jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "production")) += {release_version: $version}'  > terraform.auto.tfvars.json;\
             elif [ ${{inputs.stage}} == 'beta' ]; then \
-              jq --argjson new_env true '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "beta")) += {release_version: $version}'  > terraform.auto.tfvars.json ;\
+              jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "beta")) += {release_version: $version}'  > terraform.auto.tfvars.json ;\
             else \
-              jq --argjson new_env true '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  > terraform.auto.tfvars.json ; \
+              jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  > terraform.auto.tfvars.json ; \
             fi
             terraform fmt
             cat terraform.auto.tfvars.json
 
         - name: Generate terraform.auto.tfvars for existing environment
-          if:  ${{ inputs.env_check == 'true' }}
+          if:  ${{ !inputs.new_env }}
           id: tfvars_generator_existing
           shell: bash
           working-directory: .infra/terraform
           run: |
-            echo "Project exist: "${{ inputs.env_check }}
-            echo "Terraform stage to deploy: "${{inputs.stage}}
             echo "Release version: "${{inputs.release_version}}
             if [ ${{inputs.stage}} == 'master' ]; then \
-              jq --argjson new_env false '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "production")) += {release_version: $version}'  > terraform.auto.tfvars.json ; \
+              jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "production")) += {release_version: $version}'  > terraform.auto.tfvars.json ; \
             elif [ ${{inputs.stage}} == 'beta' ]; then \
-              jq --argjson new_env false '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "beta")) += {release_version: $version}'  > terraform.auto.tfvars.json ; \
+              jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "beta")) += {release_version: $version}'  > terraform.auto.tfvars.json ; \
             else \
-              jq --argjson new_env false '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  > terraform.auto.tfvars.json ; \
+              jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  > terraform.auto.tfvars.json ; \
             fi
             terraform fmt
             cat terraform.auto.tfvars.json
@@ -189,7 +200,7 @@ jobs:
           run: exit 1
 
         - name: Terraform Apply Prod
-          if: github.event_name == 'release' #&& ( contains( github.ref_name, 'master' ) || contains( github.ref_name, 'beta' ) )
+          if: github.event_name == 'release'
           id: infra-apply-production
           run: terraform apply -auto-approve -input=false -target='module.shared' -target='module.prod["${{ inputs.stage }}"]'
           working-directory: .infra/terraform
