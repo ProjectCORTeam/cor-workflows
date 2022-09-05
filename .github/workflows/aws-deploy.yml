@@ -12,7 +12,7 @@ on:
         type: string
         description: "Environment status checker"
       new_env:
-        required: true
+        required: false
         type: boolean
         description: "New stage for deploy check flag"
         default: false
