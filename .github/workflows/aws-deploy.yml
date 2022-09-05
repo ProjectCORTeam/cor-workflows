@@ -50,6 +50,16 @@ jobs:
         - name: Checkout
           uses: actions/checkout@v3
 
+        - name: Input preprocessing
+          shell: bash
+          working-directory: .infra/terraform
+          run: |
+            if [ ${{inputs.stage}} == 'master' ]; then \
+              echo "STAGE=production" >> $GITHUB_ENV            
+            else \
+               echo "STAGE=${{inputs.stage}}" >> $GITHUB_ENV \
+            fi
+
         - name: Input checks
           shell: bash
           working-directory: .infra/terraform
@@ -57,7 +67,7 @@ jobs:
             echo "runner: "${{ inputs.runner }}
             echo "env_check: "${{inputs.env_check}}
             echo "new_env: "${{ inputs.new_env }}
-            echo "stage: "${{inputs.stage}}
+            echo "stage: "${{env.STAGE}}
             echo "release_version: "${{inputs.release_version}}
 
         - name: Generate terraform.auto.tfvars for new environment
@@ -66,9 +76,9 @@ jobs:
           shell: bash
           working-directory: .infra/terraform
           run: |
-            if [ ${{inputs.stage}} == 'master' ]; then \
+            if [ ${{env.STAGE}} == 'master' ]; then \
               jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "production")) += {release_version: $version}'  > terraform.auto.tfvars.json;\
-            elif [ ${{inputs.stage}} == 'beta' ]; then \
+            elif [ ${{env.STAGE}} == 'beta' ]; then \
               jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "beta")) += {release_version: $version}'  > terraform.auto.tfvars.json ;\
             else \
               jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  > terraform.auto.tfvars.json ; \
@@ -83,9 +93,9 @@ jobs:
           working-directory: .infra/terraform
           run: |
             echo "Release version: "${{inputs.release_version}}
-            if [ ${{inputs.stage}} == 'master' ]; then \
+            if [ ${{env.STAGE}} == 'master' ]; then \
               jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "production")) += {release_version: $version}'  > terraform.auto.tfvars.json ; \
-            elif [ ${{inputs.stage}} == 'beta' ]; then \
+            elif [ ${{env.STAGE}} == 'beta' ]; then \
               jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "beta")) += {release_version: $version}'  > terraform.auto.tfvars.json ; \
             else \
               jq --argjson new_env ${{ inputs.new_env }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  > terraform.auto.tfvars.json ; \
@@ -152,7 +162,7 @@ jobs:
         - name: Terraform Apply Staging
           if: github.event_name == 'push' && contains(github.ref, 'staging')
           id: infra-apply-staging
-          run: terraform apply -auto-approve -input=false -target='module.shared' -target='module.staging["${{ inputs.stage }}"]'
+          run: terraform apply -auto-approve -input=false -target='module.shared' -target='module.staging["${{ env.STAGE }}"]'
           working-directory: .infra/terraform
 
         - name: Google Chat Notification - Staging
@@ -160,7 +170,7 @@ jobs:
           uses: nakamuraos/google-chat-notifications@v2.0.1
           with:
             title: Infrastructure Apply
-            subtitle: Staging - ${{ inputs.stage }}
+            subtitle: Staging - ${{ env.STAGE }}
             webhookUrl: ${{ secrets.GOOGLE_WEBHOOK }}
             status: ${{ steps.infra-apply-staging.outcome }}
 
@@ -202,7 +212,7 @@ jobs:
         - name: Terraform Apply Prod
           if: github.event_name == 'release'
           id: infra-apply-production
-          run: terraform apply -auto-approve -input=false -target='module.shared' -target='module.prod["${{ inputs.stage }}"]'
+          run: terraform apply -auto-approve -input=false -target='module.shared' -target='module.prod["${{ env.STAGE }}"]'
           working-directory: .infra/terraform
 
         - name: Google Chat Notification - Production
@@ -210,6 +220,6 @@ jobs:
           uses: nakamuraos/google-chat-notifications@v2.0.1
           with:
             title: Infrastructure Apply
-            subtitle: ${{ inputs.stage }}
+            subtitle: ${{ env.STAGE }}
             webhookUrl: ${{ secrets.GOOGLE_WEBHOOK }}
             status: ${{ steps.infra-apply-production.outcome }}
