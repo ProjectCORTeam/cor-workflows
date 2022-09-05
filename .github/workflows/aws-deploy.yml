@@ -50,7 +50,7 @@ jobs:
           uses: actions/checkout@v3
 
         - name: Generate terraform.auto.tfvars for new environment
-          if:  ${{ inputs.check_env != 'success' }}
+          if:  ${{ inputs.env_check != 'success' }}
           id: tfvars_generator_new
           shell: bash
           working-directory: .infra/terraform
