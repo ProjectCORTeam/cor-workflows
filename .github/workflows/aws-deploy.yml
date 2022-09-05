@@ -11,10 +11,6 @@ on:
         required: true
         type: string
         description: "Environment status checker"
-      # stage_check:
-      #   required: true
-      #   type: string
-      #   description: "Stage status checker"
       stage:
         required: true
         type: string
@@ -28,10 +24,10 @@ on:
         required: true
       CODEBUILD_PROJECT_STAGING:
         required: true
-      # CICD_AWS_ACCESS_KEY_ID:
-      #   required: true
-      # CICD_AWS_SECRET_ACCESS_KEY:
-      #   required: true
+      CICD_AWS_ACCESS_KEY_ID:
+        required: true
+      CICD_AWS_SECRET_ACCESS_KEY:
+        required: true
       CICD_AWS_REGION:
         required: true
       GOOGLE_WEBHOOK:
