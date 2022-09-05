@@ -55,7 +55,7 @@ jobs:
           working-directory: .infra/terraform
           run: |
             if [ ${{inputs.stage}} == 'master' ]; then \
-              echo "STAGE=production" >> $GITHUB_ENV            
+              echo "STAGE=production" >> $GITHUB_ENV \  
             else \
                echo "STAGE=${{inputs.stage}}" >> $GITHUB_ENV \
             fi
