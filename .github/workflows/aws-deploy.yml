@@ -13,9 +13,9 @@ on:
         description: "Environment status checker"
       new_env:
         required: false
-        type: string
+        type: boolean
         description: "New stage for deploy check flag"
-        default: 'false'
+        default: false
       stage:
         required: true
         type: string
@@ -73,7 +73,7 @@ jobs:
             echo "release_version: "${{inputs.release_version}}
 
         - name: Generate terraform.auto.tfvars for new environment
-          if:  ${{ inputs.new_env == 'true' }}
+          if:  ${{ inputs.new_env }}
           id: tfvars_generator_new
           shell: bash
           working-directory: .infra/terraform
@@ -89,7 +89,7 @@ jobs:
             cat terraform.auto.tfvars.json
 
         - name: Generate terraform.auto.tfvars for existing environment
-          if:  ${{ inputs.new_env == 'false' }}
+          if:  ${{ !inputs.new_env}}
           id: tfvars_generator_existing
           shell: bash
           working-directory: .infra/terraform
