@@ -69,7 +69,7 @@ jobs:
           then \
             echo "RELEASE_VERSION=prodproduction" >> $GITHUB_ENV &&
             echo "Release version: prodproduction"; \
-          elif [[ github.event_name == "pull_request" &&  github.base_ref == "beta" ]];\
+          elif [[ ${{github.event_name}} == "pull_request" &&  ${{github.base_ref}} == "beta" ]];\
           then \
             echo "RELEASE_VERSION=prodbeta" >> $GITHUB_ENV &&
             echo "Release version: prodbeta" ; \
@@ -83,7 +83,7 @@ jobs:
         if: github.event_name == 'release' || github.event_name == 'pull_request'
         shell: bash
         run: |
-          if [[ github.event_name == 'pull_request' ]]; \
+          if [[ ${{github.event_name}} == 'pull_request' ]]; \
           then \
             BRANCH_NAME=${{ github.base_ref}}
             echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV ; \
@@ -145,7 +145,7 @@ jobs:
           RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
 
       - name: Google Chat Notification
-        if: steps.check-project.outputs.project_exist=='true' && ( github.event_name == 'release' || github.event_name == 'push' ) && ${{ inputs.notifications }}
+        if: steps.check-project.outputs.project_exist=='true' && ${{ inputs.notifications }} && ( github.event_name == 'release' || github.event_name == 'push' ) 
         uses: nakamuraos/google-chat-notifications@v2.0.1
         with:
           title: Image Build
