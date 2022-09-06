@@ -59,7 +59,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set release version - production
+      - name: Set release version
         if: github.event_name == 'release' || github.event_name == 'pull_request'
         id: prod-release-version
         run: |
@@ -71,13 +71,13 @@ jobs:
           then \
             echo "RELEASE_VERSION=prodbeta" >> $GITHUB_ENV &&
             echo "Release version= prodbeta" ; \
-          else [[ github.event_name == 'release' ]];\
+          elif [[ github.event_name == 'release' ]];\
           then \
             echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV &&
             echo "Release version= "${GITHUB_REF#refs/*/} ; \
           fi
 
-      - name: Extract branch name - production
+      - name: Extract branch name
         id: extract_branch
         if: github.event_name == 'release' || github.event_name == 'pull_request'
         shell: bash
