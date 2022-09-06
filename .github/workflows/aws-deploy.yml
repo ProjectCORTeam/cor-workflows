@@ -82,7 +82,7 @@ jobs:
           shell: bash
           working-directory: .infra/terraform
           run: |
-            if [ ${{env.STAGE}} == 'master' ]; then \
+            if [ ${{env.STAGE}} == 'production' ]; then \
               jq --argjson new_env ${{ inputs.new_stage }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "production")) += {release_version: $version}'  > terraform.auto.tfvars.json;\
             elif [ ${{env.STAGE}} == 'beta' ]; then \
               jq --argjson new_env ${{ inputs.new_stage }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "beta")) += {release_version: $version}'  > terraform.auto.tfvars.json ;\
@@ -99,7 +99,7 @@ jobs:
           working-directory: .infra/terraform
           run: |
             echo "Release version: "${{inputs.release_version}}
-            if [ ${{env.STAGE}} == 'master' ]; then \
+            if [ ${{env.STAGE}} == 'production' ]; then \
               jq --argjson new_env ${{ inputs.new_stage }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "production")) += {release_version: $version}'  > terraform.auto.tfvars.json ; \
             elif [ ${{env.STAGE}} == 'beta' ]; then \
               jq --argjson new_env ${{ inputs.new_stage }} '(.env_settings[]) += {new_env: $new_env}' terraform.auto.tfvars.json.tpl  | jq --arg version ${{inputs.release_version}} '(.env_settings[] | select(.stage == "beta")) += {release_version: $version}'  > terraform.auto.tfvars.json ; \
