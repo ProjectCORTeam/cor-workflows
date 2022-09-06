@@ -63,9 +63,9 @@ jobs:
         if: github.event_name == 'release' || github.event_name == 'pull_request'
         id: prod-release-version
         run: |
-          echo "Event name "${{github.event_name}}
+          echo "Event name: "${{github.event_name}}
           echo "Target Branch: "${{github.base_ref}}
-          if [[ github.event_name == 'pull_request' &&  github.base_ref == 'master' ]]; \
+          if [ github.event_name == 'pull_request' &&  github.base_ref == "master" ]; \
           then \
             echo "RELEASE_VERSION=prodproduction" >> $GITHUB_ENV &&
             echo "Release version: prodproduction"; \
