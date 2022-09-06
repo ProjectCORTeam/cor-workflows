@@ -130,6 +130,7 @@ jobs:
           then \
             echo "::set-output name=new_stage::'false'"; \
           elif [[ $PROJECT_EXIST == "false" ]]; \
+          then \
             echo "::set-output name=new_stage::'true'"; \
           fi
         
@@ -145,7 +146,7 @@ jobs:
           RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
 
       - name: Google Chat Notification
-        if: steps.check-project.outputs.project_exist=='true' && ${{ inputs.notifications }} && ( github.event_name == 'release' || github.event_name == 'push' ) 
+        if: steps.check-project.outputs.project_exist=='true' && ( github.event_name == 'release' || github.event_name == 'push' ) 
         uses: nakamuraos/google-chat-notifications@v2.0.1
         with:
           title: Image Build
