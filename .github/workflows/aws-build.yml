@@ -73,7 +73,8 @@ jobs:
           then \
             echo "RELEASE_VERSION=prodbeta" >> $GITHUB_ENV &&
             echo "Release version: prodbeta" ; \
-          else\
+          elif [[ ${{github.event_name}} == "release" ;\
+          then \
             echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV &&
             echo "Release version: "${GITHUB_REF#refs/*/} ; \
           fi
