@@ -64,15 +64,14 @@ jobs:
         id: prod-release-version
         run: |
           if [[ github.event_name == 'pull_request' &&  github.base_ref == 'master' ]]; \
+          then \
             echo "RELEASE_VERSION=prodproduction" >> $GITHUB_ENV &&
             echo "Release version= prodproduction"; \
-          then \
           elif [[ github.event_name == 'pull_request' &&  github.base_ref == 'beta' ]];\
           then \
             echo "RELEASE_VERSION=prodbeta" >> $GITHUB_ENV &&
             echo "Release version= prodbeta" ; \
           else\
-          then \
             echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV &&
             echo "Release version= "${GITHUB_REF#refs/*/} ; \
           fi
@@ -83,11 +82,10 @@ jobs:
         shell: bash
         run: |
           if [[ github.event_name == 'pull_request' ]]; \
+          then \
             BRANCH_NAME=${{ github.base_ref}}
             echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV ; \
-          then \
-          else\
-          then \
+          else \
             BRANCH_NAME=$(git branch -r --contains ${{github.sha}} | cut -d/ -f 2) &&
             echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV ; \
           fi
