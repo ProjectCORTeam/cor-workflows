@@ -71,7 +71,7 @@ jobs:
           then \
             echo "RELEASE_VERSION=prodbeta" >> $GITHUB_ENV &&
             echo "Release version= prodbeta" ; \
-          elif [[ github.event_name == 'release' ]];\
+          else\
           then \
             echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV &&
             echo "Release version= "${GITHUB_REF#refs/*/} ; \
@@ -86,7 +86,7 @@ jobs:
             BRANCH_NAME=${{ github.base_ref}}
             echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV ; \
           then \
-          elif [[ github.event_name == 'release' ]];\
+          else\
           then \
             BRANCH_NAME=$(git branch -r --contains ${{github.sha}} | cut -d/ -f 2) &&
             echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV ; \
